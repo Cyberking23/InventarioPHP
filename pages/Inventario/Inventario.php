@@ -1,11 +1,10 @@
 <?php
-
 include("../../config/db.php");
 session_start();
+
 if ($conexion->connect_error) {
   die("Connection failed: " . $conexion->connect_error);
 }
-
 
 if (!isset($_SESSION['user_id'])) {
   header("Location: ../../index.php");
@@ -13,7 +12,27 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 $username = $_SESSION['username'];
-$sql = "SELECT id,product_name,category,price,stock,status FROM inventory";
+
+// Paginación
+$por_pagina = 10; // Productos por página
+
+$pagina_actual = isset($_GET['pagina']) ? (int)$_GET['pagina'] : 1;
+if ($pagina_actual < 1) $pagina_actual = 1;
+
+$inicio = ($pagina_actual - 1) * $por_pagina;
+
+// Obtener total de registros
+$total_query = "SELECT COUNT(*) AS total FROM inventory";
+$total_result = $conexion->query($total_query);
+$total_fila = $total_result->fetch_assoc();
+$total_registros = $total_fila['total'];
+
+$total_paginas = ceil($total_registros / $por_pagina);
+
+// Consulta con límite para paginación
+$sql = "SELECT id, product_name, category, price, stock, status 
+        FROM inventory 
+        LIMIT $inicio, $por_pagina";
 
 $resultado = $conexion->query($sql);
 
@@ -124,7 +143,6 @@ $resultado = $conexion->query($sql);
                         Eliminar
                       </button>
                     </form>
-
                   </td>
                 </tr>
               <?php endwhile; ?>
@@ -134,12 +152,11 @@ $resultado = $conexion->query($sql);
               </tr>
             <?php endif; ?>
           </tbody>
-
-
         </table>
       </div>
+
       <!-- Paginación -->
-      <!-- <div class="mt-4 flex justify-center space-x-2">
+      <div class="mt-4 flex justify-center space-x-2">
         <?php if ($pagina_actual > 1): ?>
           <a href="?pagina=<?= $pagina_actual - 1 ?>" class="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700">Anterior</a>
         <?php endif; ?>
@@ -153,9 +170,7 @@ $resultado = $conexion->query($sql);
         <?php if ($pagina_actual < $total_paginas): ?>
           <a href="?pagina=<?= $pagina_actual + 1 ?>" class="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700">Siguiente</a>
         <?php endif; ?>
-      </div> -->
-
-
+      </div>
 
     </main>
   </div>
