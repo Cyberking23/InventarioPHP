@@ -66,7 +66,7 @@ $resultado = $conexion->query($sql);
       <input
         type="text"
         name="busqueda"
-        placeholder="Buscar herramienta"
+        placeholder="Buscar herramientas"
         value="<?= isset($_GET['busqueda']) ? htmlspecialchars($_GET['busqueda']) : '' ?>"
         class="border border-gray-300 px-3 py-2 rounded" />
       <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded ml-2 hover:bg-blue-700">

@@ -1,5 +1,5 @@
 -- Database: db_ventas
-CREATE DATABASE db_ventas;
+CREATE DATABASE IF NOT EXISTS db_ventas;
 USE db_ventas;
 
 -- Table: inventory
