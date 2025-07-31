@@ -8,7 +8,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($stmt) {
             $stmt->bind_param("i", $id);
             if ($stmt->execute()) {
-                echo "Eliminación de registro exitosa";
+                echo "<script>
+                alert('Datos Eliminados Correctamente');
+                window.location.href = '../../Inventario/Inventario.php';
+        </script>";
             } else {
                 echo "Error al eliminar el registro: " . $stmt->error;
             }

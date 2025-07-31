@@ -13,29 +13,35 @@ if (!isset($_SESSION['user_id'])) {
 
 $username = $_SESSION['username'];
 
+// Parámetros de búsqueda
+$busqueda = isset($_GET['busqueda']) ? $conexion->real_escape_string($_GET['busqueda']) : '';
+
 // Paginación
 $por_pagina = 10; // Productos por página
-
 $pagina_actual = isset($_GET['pagina']) ? (int)$_GET['pagina'] : 1;
 if ($pagina_actual < 1) $pagina_actual = 1;
 
 $inicio = ($pagina_actual - 1) * $por_pagina;
 
-// Obtener total de registros
-$total_query = "SELECT COUNT(*) AS total FROM inventory";
-$total_result = $conexion->query($total_query);
+// Consulta total con posible búsqueda
+$total_sql = "SELECT COUNT(*) AS total FROM inventory";
+if (!empty($busqueda)) {
+  $total_sql .= " WHERE product_name LIKE '%$busqueda%'";
+}
+$total_result = $conexion->query($total_sql);
 $total_fila = $total_result->fetch_assoc();
 $total_registros = $total_fila['total'];
-
 $total_paginas = ceil($total_registros / $por_pagina);
 
-// Consulta con límite para paginación
+// Consulta principal con límite y búsqueda
 $sql = "SELECT id, product_name, category, price, stock, status 
-        FROM inventory 
-        LIMIT $inicio, $por_pagina";
+        FROM inventory";
+if (!empty($busqueda)) {
+  $sql .= " WHERE product_name LIKE '%$busqueda%'";
+}
+$sql .= " LIMIT $inicio, $por_pagina";
 
 $resultado = $conexion->query($sql);
-
 ?>
 
 <!DOCTYPE html>
@@ -56,8 +62,24 @@ $resultado = $conexion->query($sql);
       <div class="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold">S</div>
       <span class="text-2xl font-semibold tracking-wide">SalesHub</span>
     </div>
-    <div class="flex items-center space-x-4">
+    <form method="GET" action="Inventario.php" class="mb-4">
+      <input
+        type="text"
+        name="busqueda"
+        placeholder="Buscar herramienta"
+        value="<?= isset($_GET['busqueda']) ? htmlspecialchars($_GET['busqueda']) : '' ?>"
+        class="border border-gray-300 px-3 py-2 rounded" />
+      <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded ml-2 hover:bg-blue-700">
+        Buscar
+      </button>
+      <a href="Inventario.php" class="bg-blue-500 text-white px-4 py-2 rounded ml-2 hover:bg-blue-600">
+        Ver todos
+      </a>
 
+    </form>
+
+
+    <div class="flex items-center space-x-4">
       <a href="../Funciones/Inventario/Logout.php"><i data-lucide="log-out" class="w-5 h-5 text-blue-600 cursor-pointer"></i></a>
       <div class="flex items-center space-x-1 cursor-pointer">
         <div class="bg-blue-500 text-white text-sm rounded-full w-8 h-8 flex items-center justify-center">
@@ -76,27 +98,6 @@ $resultado = $conexion->query($sql);
         <a href="#" class="flex items-center gap-2 text-blue-600 font-semibold">
           <i data-lucide="home" class="w-5 h-5"></i> <span>Dashboard</span>
         </a>
-        <a href="#" class="flex items-center gap-2 hover:text-blue-600">
-          <i data-lucide="boxes" class="w-5 h-5"></i> <span>Inventory</span>
-        </a>
-        <a href="#" class="flex items-center gap-2 hover:text-blue-600">
-          <i data-lucide="file-text" class="w-5 h-5"></i> <span>Orders</span>
-        </a>
-        <a href="#" class="flex items-center gap-2 hover:text-blue-600">
-          <i data-lucide="users" class="w-5 h-5"></i> <span>Customers</span>
-        </a>
-        <a href="#" class="flex items-center gap-2 hover:text-blue-600">
-          <i data-lucide="bar-chart" class="w-5 h-5"></i> <span>Revenue</span>
-        </a>
-        <a href="#" class="flex items-center gap-2 hover:text-blue-600">
-          <i data-lucide="line-chart" class="w-5 h-5"></i> <span>Growth</span>
-        </a>
-        <a href="#" class="flex items-center gap-2 hover:text-blue-600">
-          <i data-lucide="clipboard-list" class="w-5 h-5"></i> <span>Reports</span>
-        </a>
-        <a href="#" class="flex items-center gap-2 hover:text-blue-600">
-          <i data-lucide="settings" class="w-5 h-5"></i> <span>Settings</span>
-        </a>
       </nav>
     </aside>
 
@@ -105,7 +106,9 @@ $resultado = $conexion->query($sql);
       <!-- Title -->
       <div class="flex items-center justify-between">
         <h1 class="text-3xl font-bold">Inventory</h1>
-        <a href="./AñadirProducto.php"><button class="bg-blue-600 text-white px-4 py-2 rounded shadow hover:bg-blue-700">+ Add Product</button></a>
+        <a href="../Funciones/Inventario/CSV.php"><button class="bg-red-600 text-white px-4 py-2 rounded shadow hover:bg-red-700">Exportar CSV</button></a>
+        <a href="./AñadirProducto.php"><button class="bg-blue-600 text-white px-4 py-2 rounded shadow hover:bg-blue-700">Añadir Producto</button></a>
+
       </div>
 
       <!-- Table -->
@@ -156,21 +159,15 @@ $resultado = $conexion->query($sql);
       </div>
 
       <!-- Paginación -->
-      <div class="mt-4 flex justify-center space-x-2">
-        <?php if ($pagina_actual > 1): ?>
-          <a href="?pagina=<?= $pagina_actual - 1 ?>" class="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700">Anterior</a>
-        <?php endif; ?>
-
+      <div class="mt-4">
         <?php for ($i = 1; $i <= $total_paginas; $i++): ?>
-          <a href="?pagina=<?= $i ?>" class="px-3 py-1 rounded <?= $i === $pagina_actual ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300' ?>">
+          <a href="?pagina=<?= $i ?>&busqueda=<?= urlencode($busqueda) ?>"
+            class="px-3 py-1 border rounded <?= $i == $pagina_actual ? 'bg-blue-600 text-white' : 'bg-gray-200' ?>">
             <?= $i ?>
           </a>
         <?php endfor; ?>
-
-        <?php if ($pagina_actual < $total_paginas): ?>
-          <a href="?pagina=<?= $pagina_actual + 1 ?>" class="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700">Siguiente</a>
-        <?php endif; ?>
       </div>
+
 
     </main>
   </div>
