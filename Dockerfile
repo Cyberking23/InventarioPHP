@@ -1,13 +1,13 @@
 FROM ubuntu:22.04
 
-RUN apt-get update && apt-get install -y \
-    apache2 \
-    php \
-    php-mysqli \
-    php-pdo-mysql \
-    mysql-server \
-    libapache2-mod-php \
-    && apt-get clean
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Configura la zona horaria antes de instalar paquetes que la requieren
+RUN ln -fs /usr/share/zoneinfo/America/El_Salvador /etc/localtime && \
+    apt-get update && \
+    apt-get install -y apache2 php php-mysqli php-pdo-mysql mysql-server libapache2-mod-php tzdata && \
+    dpkg-reconfigure --frontend noninteractive tzdata && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
 
 COPY ./ /var/www/html/
 
