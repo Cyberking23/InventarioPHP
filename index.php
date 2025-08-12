@@ -9,7 +9,7 @@
 <body class="bg-gradient-to-br from-blue-100 via-white to-blue-200 min-h-screen flex items-center justify-center font-sans text-gray-800">
 
   <div class="bg-white/90 backdrop-blur-md rounded-xl shadow-lg p-12 max-w-lg w-full text-center">
-    <h1 class="text-4xl font-extrabold text-blue-700 mb-6">Bienvenido a SalesHub</h1>
+    <h1 class="text-4xl font-extrabold text-blue-700 mb-6">Bienvenido a SalesHubs</h1>
     <p class="text-lg text-gray-700 mb-8">
       Tu sistema moderno y futurista para la gestión de inventarios y ventas.<br />
       Optimiza tu flujo de trabajo, controla tus productos y lleva tu negocio al siguiente nivel.
