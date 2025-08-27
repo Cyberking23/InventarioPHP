@@ -7,9 +7,7 @@ $password = getenv("MYSQLPASSWORD");
 $database = getenv("MYSQLDATABASE");
 
 // Conexión con mysqli
-// $conexion = new mysqli($host, $user, $password, $database, $port);
-$conexion = var_dump($host, $user, $password, $database, $port);
-
+$conexion = new mysqli($host, $user, $password, $database, $port);
 
 // Verificar conexión
 if ($conexion->connect_error) {
