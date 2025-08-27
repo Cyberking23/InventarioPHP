@@ -1,10 +1,9 @@
 <?php
 include('../../../config/db.php');
 
-if ($conexion->error) {
-    die("Connection failed: " . $conexion->error);
+if ($conexion->connect_error) {
+    die("Connection failed: " . $conexion->connect_error);
 }
-
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $user = trim($_POST['username'] ?? '');
@@ -23,6 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $user_safe = mysqli_real_escape_string($conexion, $user);
     $email_safe = mysqli_real_escape_string($conexion, $email);
 
+    // Verificar si el usuario o email ya existen
     $sql_check = "SELECT COUNT(*) as count FROM users WHERE username = '$user_safe' OR email = '$email_safe'";
     $result = mysqli_query($conexion, $sql_check);
     $row = mysqli_fetch_assoc($result);
@@ -31,15 +31,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         die("El nombre de usuario o correo ya está registrado.");
     }
 
-    $passHash = password_hash($pass, PASSWORD_DEFAULT);
+    // ✅ Crear hash seguro de la contraseña
+    $passHash = password_hash($pass, PASSWORD_BCRYPT);
 
+    // Insertar usuario en la base de datos
     $sql_insert = "INSERT INTO users (username, email, password) VALUES ('$user_safe', '$email_safe', '$passHash')";
 
     if (mysqli_query($conexion, $sql_insert)) {
         echo "<script>
             alert('Registro exitoso. Por favor inicia sesión.');
             window.location.href = '../../Inicios/login.php';
-          </script>";
+        </script>";
         exit;
     } else {
         echo "Error al registrar: " . mysqli_error($conexion);
@@ -50,3 +52,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 mysqli_close($conexion);
+?>
